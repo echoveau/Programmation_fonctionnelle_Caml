@@ -1,0 +1,206 @@
+(*Exercice 1*)
+type 'a arbre_bin = F of 'a | N of ('a* 'a arbre_bin*'a arbre_bin);;
+N(1,N(2,F 6,F 7),N(3,F 4,F 5));;
+F 5;;
+
+let rec nbnoeuds a = match a with 
+			F x -> 0
+			|N(_,a1,a2)->1+(nbnoeuds a1)+(nbnoeuds a2);;
+let arb=N(1,N(2,F 6,F 7),N(3,F 4,F 5));;
+nbnoeuds arb;;
+
+let rec nbfeuilles a = match a with 
+			F x -> 1
+			|N(_,a1,a2)->(nbfeuilles a1)+(nbfeuilles a2);;
+nbfeuilles arb;;	
+
+let rec profondeur a = match a with
+			F x -> 0	
+			|N(_,a1,a2)->let p1 = profondeur a1 in let p2 = profondeur a2
+					in if p1<p2 then p2+1
+					else p1+1;;
+profondeur (N(1,F 4,N(3,N(2,F 6,F 7),F 5)));;
+
+let rec meme_forme a1 a2 = match (a1,a2) with
+			(F _,F _) -> true
+			|(N(_),F _)->false
+			|(F _,N(_))->false
+			|(N(_,rg1,rg2),N(_,rd1,rd2))->(meme_forme rg1 rd1) && (meme_forme rg2 rd2);;
+
+
+meme_forme arb (N(7,F 8,N(3,N(6,F 5,F 7),F 5)));;
+
+(*liste des valeurs de feuilles de l'arbre*)
+let rec listedeval a = match a with
+			F x ->x::[]
+			|N(_,r1,r2)->(listedeval r1)@(listedeval r2);;
+
+listedeval (N(7,F 8,N(3,N(6,F 5,F 7),F 5)));;
+
+(*map arbre qui applique une fonction à toute les etiquettes d'un arbre*)
+let rec map_arbre f a = match a with
+			F x -> F (f x)
+			|N(x,r1,r2) -> N(f x,map_arbre f r1,map_arbre f r2);;
+
+(*Incrémenter toutes les feuilles d'un arbre d'entiers*)
+map_arbre (function x ->x+1) (N(7,F 8,N(3,N(6,F 5,F 7),F 5)));;
+
+
+
+(*Exercice 2*)
+type operateur_bin = Mult | Add;;
+type operateur_un = Moins;;
+type arbre = 	Const of int
+	    	|Var of string
+		|Noeud1 of (operateur_un * arbre)
+		|Noeud2 of (operateur_bin * arbre * arbre);;
+
+let rec chaine_de_arbre e = match e with
+			Const x -> string_of_int x
+			|Var v -> v
+			|Noeud1(Moins,a) ->"-("^(chaine_de_arbre a)^")"
+			|Noeud2(Mult,ag,ad) ->"("^(chaine_de_arbre ag)^"*"^(chaine_de_arbre ad)^")"
+			|Noeud2(Add,ag,ad) ->"("^(chaine_de_arbre ag)^"+"^(chaine_de_arbre ad)^")";;
+
+chaine_de_arbre (Noeud2(Add,Noeud2(Mult,Var "x",Const 3),Var "y"));;
+
+
+let rec close e l = match e with
+			Const x -> true
+			|Var v -> let rec appartient va li = match li with		              	(*(it_list (function b (x,n) -> x=v or b) false L)*)						
+								[]->false
+								|(x,n)::r-> x=va or appartient v r
+				  in appartient v l											
+			|Noeud1(_,a) ->close a l
+			|Noeud2(_,ag,ad) ->close ag l & close ad l;;
+
+
+close (Noeud2(Add,Noeud2(Mult,Var "x",Const 3),Var "y")) [("x",1);("y",2)] ;;
+
+
+let rec eval e l = match e with
+			Const x -> x
+			|Var v -> let rec find va li = match li with		              						
+								[]->0
+								|(x,n)::r-> if x=va then n else find va r
+				  in find v l
+			|Noeud1(Moins,a) -> - (eval a l)
+			|Noeud2(Mult,ag,ad)-> (eval ag l)*(eval ad l)
+			|Noeud2(Add,ag,ad) -> (eval ag l)+(eval ad l);;
+
+
+eval (Noeud2(Add,Noeud2(Mult,Var "x",Const 3),Var "y")) [("x",1);("y",2)] ;;
+
+
+
+
+(*Exercice 3*)
+type operateur = Mult | Plus | Moins;;
+type arbre = C of int
+	    |N of (operateur * arbre list);;
+
+
+(*1*)
+let rec nbconst a = match a with
+		C _ ->1
+		|N(_,l)-> it_list (fun n ar-> n+(nbconst ar)) 0 l;;
+nbconst (N(Plus,[C 1;N(Mult,[C 5;C 2])]));;
+
+
+let rec nbconst2 a =  match a with
+			 C _ ->1
+			|N(_,l)-> let sommeliste li = it_list (fun n x->n+x) 0 li
+				in sommeliste(map nbconst2 l);;
+
+nbconst2 (N(Plus,[C 1;N(Mult,[C 5;C 2])]));;
+
+
+
+(*2*)
+let rec estcorrect a = match a with
+			C _ -> true
+			|N(_,[])-> false
+			|N(_,l)-> it_list (fun b ad-> b & (estcorrect ad)) true l;;
+estcorrect (N(Plus,[C 1;N(Mult,[C 5;C 2])]));;
+
+
+let rec estcorrect2 a = match a with
+			C _ -> true
+			|N(_,[])-> false
+			|N(_,l)-> let sommebooll li = it_list (fun b n -> b&n) true li
+				 in sommebooll(map estcorrect2 l);;
+estcorrect2 (N(Plus,[C 1;N(Mult,[C 5;C 2])]));;
+
+
+
+(*3*)
+let operation op a b = match op with
+			Mult-> a*b
+			|Plus -> a+b
+			|Moins -> a-b;;
+
+
+let rec valeur a = match a with
+			C x -> x
+			|N(Mult,l)-> it_list (fun n ar-> (operation Mult n (valeur ar))) 1 l
+			|N(op,l)-> it_list (fun n ar-> (operation op n (valeur ar))) 0 l;;
+valeur (N(Plus,[C 1;N(Mult,[C 5;C 2])]));;
+
+
+let operation2 op l = match op with
+			Mult-> it_list (fun n1 n2->n1*n2) 1 l
+			|Plus -> it_list (fun n1 n2->n1+n2) 0 l
+			|Moins -> it_list (fun n1 n2->n1-n2) 0 l;;
+
+let rec valeur2 a = match a with 
+			C x -> x
+			|N(op,l)-> operation2 op (map valeur2 l);;
+valeur2 (N(Plus,[C 1;N(Mult,[C 5;C 2])]));;
+
+
+(*4*)
+let string_of_op op = match op with
+			Mult-> "*"
+			|Plus -> "+"
+			|Moins -> "-";;
+
+let rec chaine_de_arbre a = match a with
+			C x -> string_of_int x
+			|N(op,l)-> match l with
+					[]-> failwith "Expression non correcte"
+					|ad::r-> "("^(it_list (fun s ar -> s^(string_of_op op)^(chaine_de_arbre ar)) (chaine_de_arbre ad) r)^")";;
+chaine_de_arbre (N(Plus,[C 1;N(Mult,[C 5;C 2])]));;
+
+
+
+let rec chaine_de_arbre2 a = match a with
+			C x -> string_of_int x
+			|N(op,l)-> match l with
+					[]-> failwith "Expression non correcte"
+					|ad::r-> let rec metaplat li = match li with
+									[]->""
+									|x::ri->x^(metaplat ri)
+						in "("^chaine_de_arbre2 ad^string_of_op op^metaplat (map chaine_de_arbre2 r)^")";;
+
+chaine_de_arbre2 (N(Plus,[C 1;N(Mult,[C 5;C 2])]));;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

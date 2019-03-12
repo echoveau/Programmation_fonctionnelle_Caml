@@ -1,0 +1,181 @@
+type dico = Dic of char * bool * dico list;;
+
+let d1 = Dic(`*`, false, [Dic(`a`,true,[Dic(`n`,true,[])]);Dic(`b`,false,[Dic(`a`,false,[Dic(`c`,true,[]);Dic(`r`,true,[])])])]);;
+
+let list_of_string s = 
+	let rec l_of_s s =
+		let long = string_length s
+		in if long=0 then []
+		   else (nth_char s 0)::l_of_s(sub_string s 1 (long-1))
+	in `*`::l_of_s s;;
+
+list_of_string "ba";;
+
+(*1*)
+let rec cherche mot d = match (mot,d) with
+				([],_)->failwith "Attention ! Le mot doit commencer par *"
+				|(x::[],Dic(y,b,_))-> if x=y then b else false
+			        |(x::rl,Dic(y,_,rd))-> if x=y then mem true (map (function x-> cherche rl x) rd)
+							else false ;;
+
+cherche [`*`; `b`; `a`; `r`] d1;;
+cherche [`*`; `b`; `a`] d1;;
+cherche [`*`; `a`;`n`] d1;;
+cherche [] d1;;
+
+
+
+let rec cherche2 mot (Dic(y,b,rd)) = match mot with
+					[]->failwith "Attention ! Le mot doit commencer par *"
+					|x::[]-> if x=y then b else false
+					|x::rl-> if x=y then list_it (fun a b -> b || cherche rl a) rd false
+								else false ;;
+
+cherche2 [`*`; `b`; `a`; `r`] d1;;
+cherche2 [`*`; `a`;`n`] d1;;
+cherche2 [`*`; `b`; `a`; `d`] d1;;
+cherche2 [`*`; `c`; `a`; `r`] d1;;
+cherche2 [`*`; `b`; `a`] d1;;
+cherche2 [`a`;`n`] d1;;
+cherche2 [] d1;;
+
+
+
+(*2*)
+let ajouter_en_tete car ll = map (function l -> car::l) ll ;;
+ajouter_en_tete `b` [[`c`];[`a`;`c`];[]];;
+
+
+
+let rec tous_les_mots d = match d with
+			Dic(y,b,[])-> if b then [[y]] else [[]]
+			|Dic(y,b,rd) ->if b then [y]::ajouter_en_tete y (list_it (fun r l -> (tous_les_mots r)@l) rd []) 
+					else ajouter_en_tete y (list_it (fun r l -> (tous_les_mots r)@l) rd []);;
+
+tous_les_mots (Dic(`*`, true, []));;
+tous_les_mots d1;;
+
+
+(*
+
+
+let rec parties2 l = match l with
+			[] -> []::[]
+			|x::r -> let p = parties2 r in map (function l -> x::l) p@p;;
+parties2 [1;2;3;4];;
+
+
+*)
+
+
+(*3*)
+let rec inserer mot (Dic(y,b,rd)) = match mot with
+			[]-> Dic(y,b,rd)
+			|x::r-> if x<>y then (Dic(y,b,rd))
+				else match r with
+					[]-> Dic(x,true,rd)
+					|e::_ ->if exists (fun (Dic(ed,bo,rg))->ed=e) rd 
+							then (Dic(y,b,(map (inserer r) rd)))
+						else (Dic(y,b,rd@[inserer r (Dic(e,false,[]))]));;
+
+
+d1;;
+inserer [`*`; `b`; `a`; `i`; `e`] d1;;
+inserer [`*`; `c`] d1;;				
+inserer [`*`; `b`; `a`] d1;;		
+inserer [`*`; `b`] d1;;			
+
+(* 		if x=y then Dic(y,b,(list_it (fun l rdic -> (inserer r rdic)) [] rd))  else Dic(y,b,rd@[Dic(x,true,[])]) 	
+
+
+			|x::[]->if x=y then Dic(y,true,rd) else Dic(y,b,rd)
+
+	*)
+
+
+
+
+(*4*)
+
+let rec supprimer_v1 mot (Dic(y,b,rd)) = match mot with 
+				[]-> (Dic(y,b,rd))
+				|x::r-> if x<>y then (Dic(y,b,rd))
+					else match rd with
+						[]->(Dic(y,false,rd))
+						|e::rl->(Dic(y,b,map (supprimer_v1 r) rd));;
+
+ 
+d1;;
+supprimer_v1 [`*`; `b`; `a`;`r`] d1;;
+supprimer_v1 [`*`; `b`; `a`;`r`] (inserer [`*`; `b`; `a`; `i`; `e`] d1);;
+
+
+
+let rec nb_element l = match l with
+			[]->0
+			|_::r->1+(nb_element r);;
+let rec nb_noeuds d = match d with
+			Dic(_,_,[])->1
+			|Dic(_,_,rb)->(it_list (fun compteur a ->compteur+(nb_noeuds a)) 1 rb);;
+
+
+let rec supprimer_v2 mot (Dic(y,b,rd)) = match mot with
+				[]-> (Dic(y,b,rd))
+				|x::r-> if x<>y then (Dic(y,b,rd))
+					else match r with
+						[]-> (Dic(y,false,rd))
+						|e::_ ->if (nb_noeuds (Dic(y,b,rd)))>(nb_element r)+1 then (Dic(y,b,(map (supprimer_v2 r) rd)))
+							else (Dic(y,b,[]));;
+
+d1;;
+supprimer_v2 [`*`; `b`; `a`; `r`; `y`; `l`] (inserer [`*`; `b`; `a`; `r`; `y`; `y`] d1);;
+(inserer [`*`; `b`; `a`; `r`; `y`; `y`] d1);;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

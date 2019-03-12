@@ -1,0 +1,114 @@
+(*EXERCICE 1*)
+let rec longueur l = match l with 	[]->0
+			     	       	|_::r->1+ longueur r;;
+
+let rec concat l r = match l with	[]->r
+					|x::y-> x::(concat y r) ;;
+concat [1;2;3][4;5;6];;
+
+let rec nieme l n = match (l,n) with	([],_)->failwith "liste vide"
+					|(x::r,0)->x
+					|(x::r,_)->nieme r (n-1);;
+nieme [1;2;3;4] 2;;
+
+(*EXERCICE 2*)
+let rec npremiers l n = match (l,n) with	(_,0)->[]
+						|([],_)->failwith "liste vide"
+						|(x::r,_)->x::npremiers r (n-1);;
+npremiers[1;2;3;4] 0;;
+
+let rec met_a_plat l = match l with	[]->[]
+					|x::r -> x@met_a_plat r;;
+met_a_plat [[1;2];[3;4]];;
+
+let rec paire_vers_liste (l1,l2) = match (l1,l2) with ([],_)->[]
+						|(_,[])->[]
+						|(x::r1,y::r2)->(x,y)::paire_vers_liste (r1,r2);;
+paire_vers_liste ([1;2;3],[4;5;6]);;
+
+let rec liste_vers_paire l = match l with	[]->([],[])
+						|(x,y)::r->let lvp = liste_vers_paire r
+								in (x::fst lvp,y::snd lvp);;
+liste_vers_paire [(1,7); (2,8); (3,9)];;
+
+let rec supprime1 l x = match l with []->[]
+				     |y::r-> if y<>x then y::supprime1 r x 
+						else r;;
+supprime1 [1;2;3;1;4;5;6;1] 1;;
+
+let rec supprime2 l x = match l with []->[]
+				     |y::r-> if y=x then supprime2 r x
+				     		else y::supprime2 r x;;
+supprime2 [1;2;3;1;4;2;6;1] 1;;
+
+let rec min_liste l = match l with []->failwith "Erreur"
+				   |x::[]->x
+				   |x::r-> let m=min_liste r in
+						if x<m then x else m;;
+min_liste [4;5;6;1;2;8];;
+
+let rec doublon l = match l with []->[]
+				|x::r->x::doublon (supprime2 r x);; 
+doublon [1;2;3;1;4;2;3;1];;
+
+
+(*EXERCICE 3*)
+(*1*)
+let rec inserer_texte x ll = if ll=[] then []
+				else (x::hd ll)::(inserer_texte x (tl ll));;
+inserer_texte 5 [[1];[2;3];[4;5]];;
+
+let rec parties l = match l with	[]->[]::[]
+					|x::r-> let p = parties r in (inserer_texte x p)@ p;;
+
+parties [1;2;3;4];;
+
+(*2*)
+let rec sous_listes n l = match (n,l) with
+				(0,[])->[]::[]
+				|(_,[])->[]
+				|(_,x::r)->(inserer_texte x (sous_listes (n-1) r)) @ (sous_listes n r);;
+sous_listes 2 [1;2;3;4];;
+
+
+(*EXERCICE 4*)
+(*a*)
+let inserer_tete x ll = map (function l -> x::l) ll;;
+inserer_tete 5 [[1];[2;3];[4;5]];;
+
+(*b*)
+let rec parties2 l = match l with
+			[] -> []::[]
+			|x::r -> let p = parties2 r in map (function l -> x::l) p@p;;
+parties2 [1;2;3;4];;
+
+(*EXERCICE 5*)
+let longueur2 l = let somme x y = y+1 in list_it somme l 0;;
+longueur2 [1;2;3;4];;
+
+let concat2 l1 l2 = let con x y = x::y in list_it con l1 l2;;
+concat2 [1;2;3][4;5;6];;
+
+let met_a_plat2 ll = let mapl x y = x@y in list_it mapl ll [];;
+met_a_plat2 [[1;2];[3;4]];;
+
+let supprime22 l x= let sup a b = if a<>x then a::b else b in list_it sup l [];;
+supprime22 [1;2;3;1;4;2;6;1] 1;;
+
+let doublon2 l = let dou a b = a::(supprime22 b a) in list_it dou l [];;
+doublon2 [1;2;3;1;4;2;3;1];;
+
+
+let map2 f l = let ma a b = f a::b in list_it ma l [];;
+map2 (function x->x+1) [1;2;3];;
+
+
+
+
+
+
+
+
+
+
+

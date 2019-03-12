@@ -1,0 +1,21 @@
+let calculttc prixHT = prixHT*.1.20;;
+calculttc(10.);;
+let anneebis an = if ((an mod 4) = 0) & ((an mod 100) <> 0) or ((an mod 400) = 0) then true 
+			else false;;		
+let minus car = if int_of_char(car)>96 & int_of_char(car)<123 then true else false;;
+let minus car = if car>=`a` & car<=`z` then true else false;;			
+let avg x y = (x+.y)/.2.;;
+let quores x y = (x/y,x mod y);;
+let puissance_4 x = let carre x = x*x 
+			in carre x * carre x;;
+let min_to_maj car = char_of_int(int_of_char(car)-32);;
+let rec fib = function 0 -> 0
+			| 1 -> 1
+			| n -> fib(n-1) + fib(n-2);;		 
+let rec ncarres = function 0 -> 0
+			   |n -> n*n + ncarres (n-1);;
+let rec sigma = function (f,n) -> if n=0 then f 0
+		    		else f n + sigma(f, n-1);;
+let ncarres2 x = let f x = x*x in
+ 		 sigma(f,x);;
+ncarres2 4;;
